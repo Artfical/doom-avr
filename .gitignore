@@ -1,0 +1,25 @@
+# doom-avr is an artfical project
+# Copyright (C) 2026 Talha Berk Arslan
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Copyrighted game data -- never committed, see README's Licensing section.
+# Supply your own at wad/doom1.wad.
+wad/*.wad
+wad/*.zip
+
+# chocolate-doom is cloned locally as a reference only (see ARCHITECTURE.md)
+# -- it's its own repo under its own GPL-2.0 license, not vendored here.
+/chocolate-doom/
+
+# Build artifacts -- regenerate with `python doomavr.py build`.
+avr/build/
+host/chunks/*.BIN
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor/OS cruft
+.vscode/
+.DS_Store
+Thumbs.db
