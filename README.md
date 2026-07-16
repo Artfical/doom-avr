@@ -11,6 +11,8 @@ This is a real, working, thoroughly-tested project, not a proof-of-concept sketc
 
 ## Install dependencies
 
+**Windows shortcut:** `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` runs all of the steps below automatically (toolchain, Python packages, WAD download). macOS/Linux setup scripts are not written yet, use the manual steps below.
+
 **1. The AVR toolchain** (`avr-gcc` + `avrdude`, compiles firmware and flashes the board):
 
 | OS | Command |
