@@ -11,7 +11,37 @@ This is a real, working, thoroughly-tested project, not a proof-of-concept sketc
 
 ## Install dependencies
 
-**Windows shortcut:** `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` runs all of the steps below automatically (toolchain, Python packages, WAD download). macOS/Linux setup scripts are not written yet, use the manual steps below.
+**Setup scripts** run every step below automatically: install the AVR toolchain, install the Python packages, and download the WAD. Pick your OS and paste the whole block into a terminal from scratch (clone included):
+
+Windows (PowerShell):
+
+```
+git clone https://github.com/Artfical/doom-avr.git
+cd doom-avr
+powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1
+```
+
+Linux (Debian/Ubuntu, apt-based):
+
+```
+git clone https://github.com/Artfical/doom-avr.git
+cd doom-avr
+chmod +x scripts/setup_linux.sh
+./scripts/setup_linux.sh
+```
+
+macOS (Homebrew):
+
+```
+git clone https://github.com/Artfical/doom-avr.git
+cd doom-avr
+chmod +x scripts/setup_macos.sh
+./scripts/setup_macos.sh
+```
+
+**Only the Windows script has actually been run on real hardware.** The Linux and macOS scripts have been reviewed for correctness but not tested end to end on a real machine yet. Use them at your own risk, and please open an issue if something breaks.
+
+If a script fails, or you'd rather install things by hand, here's what each step does:
 
 **1. The AVR toolchain** (`avr-gcc` + `avrdude`, compiles firmware and flashes the board):
 
