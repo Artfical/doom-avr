@@ -76,9 +76,13 @@ Once the above is done:
 ```
 python doomavr.py ports              # find your board's COM port
 python doomavr.py build              # compile every chunk into host/chunks/
-python doomavr.py menu COM10         # flash the resting state (main menu)
-python doomavr.py run COM10          # launch the graphical host client
+python doomavr.py run COM10          # flash the main menu and launch the host client
 ```
+
+`run` always reflashes MENU.BIN before it starts, so the client and the board's actual
+state can't drift out of sync (e.g. from a chunk left over by a previous session) -- no
+separate reset step needed. `python doomavr.py menu COM10` still exists on its own if
+you want to force the board back to the menu without launching the GUI.
 
 In the menu: arrow keys / WASD to navigate, Enter to select, mouse click also works.
 In-game (New Game): WASD/arrows to move and turn, Space or left-click to fire, `q` to save.

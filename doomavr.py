@@ -11,7 +11,10 @@
     doomavr.py menu PORT          shortcut: flash MENU.BIN -- the known-good resting
                                    state, useful after any out-of-band testing leaves
                                    the board on a chunk the host doesn't expect
-    doomavr.py run PORT           launch the graphical host client (host/client.py)
+    doomavr.py run PORT           flash MENU.BIN then launch the graphical host client
+                                   (host/client.py) -- always resyncs the board to the
+                                   menu first so a chunk left over from a previous
+                                   session can't desync client and board
     doomavr.py ports              list serial ports pyserial can see right now
     doomavr.py regen-map          regenerate avr/src/map_data.h + host/map_data.py
                                    from wad/doom1.wad (tools/gen_map.py)
