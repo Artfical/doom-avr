@@ -87,6 +87,12 @@ you want to force the board back to the menu without launching the GUI.
 In the menu: arrow keys / WASD to navigate, Enter to select, mouse click also works.
 In-game (New Game): WASD/arrows to move and turn, Space or left-click to fire, `q` to save.
 
+## Demo video
+
+https://github.com/Artfical/doom-avr/raw/master/docs/videos/showdown.mp4
+
+Real board, real serial connection, no mockups.
+
 ## Screenshots
 
 | Main menu | In-game (E1M1) | Status bar |
