@@ -21,6 +21,7 @@ full project writeup and doom_avr_project memory for the build history.
 """
 from __future__ import annotations
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -29,12 +30,35 @@ ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "host"))
 
 
+def _bash_executable() -> str:
+    """On Windows, "bash" on PATH often resolves to the WSL launcher stub
+    (System32 or WindowsApps) ahead of Git for Windows' real bash.exe. The
+    WSL one treats the script argument as a path inside the WSL filesystem,
+    not a Windows path, so it fails with "No such file or directory" even
+    though the file is right there. Prefer Git for Windows' bash explicitly;
+    elsewhere "bash" on PATH is the real thing already."""
+    if sys.platform != "win32":
+        return "bash"
+    for candidate in (r"C:\Program Files\Git\bin\bash.exe",
+                      r"C:\Program Files (x86)\Git\bin\bash.exe"):
+        if Path(candidate).exists():
+            return candidate
+    exe = shutil.which("bash")
+    if exe and "windowsapps" not in exe.lower() and "system32" not in exe.lower():
+        return exe
+    raise RuntimeError(
+        "No usable bash found (only WSL's bash.exe, if any, which can't run "
+        "avr/build.sh since it doesn't understand Windows paths). Install "
+        "Git for Windows (https://git-scm.com/download/win) and re-run."
+    )
+
+
 def cmd_build(_args) -> int:
     # Forward slashes: git-bash's own argv parsing treats a bare "\" as an
     # escape character and silently eats backslash-separated Windows paths
     # (e.g. "C:\Users\..." becomes "C:Users...").
     script = (ROOT / "avr" / "build.sh").as_posix()
-    result = subprocess.run(["bash", script], cwd=str(ROOT / "avr"))
+    result = subprocess.run([_bash_executable(), script], cwd=str(ROOT / "avr"))
     return result.returncode
 
 
