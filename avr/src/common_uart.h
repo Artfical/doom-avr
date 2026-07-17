@@ -11,6 +11,7 @@
 #define DOOM_AVR_COMMON_UART_H
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -22,12 +23,36 @@
  * UBRR=7 (8.5% baud error, garbled UART) instead of the correct UBRR=8. */
 #define UBRR_VALUE (((F_CPU + 8UL * BAUD) / (16UL * BAUD)) - 1)
 
+/* RX ring buffer, filled by USART_RX_vect below. The ATmega328p's own RX
+ * hardware only holds 2 bytes; without this, any byte that arrives while
+ * the chunk is busy elsewhere (e.g. mid-way through draw_menu()'s blocking
+ * TX writes) gets silently dropped on overrun -- observed as "pressed
+ * Enter right after an arrow key and it just didn't register" and as lost
+ * bytes from the host's multi-byte mouse-click bursts (several w/s bytes
+ * plus \r sent back-to-back with no gap). 32 bytes is far more than one
+ * human keypress burst or one mouse-click jump needs. */
+#define UART_RX_BUF_SIZE 32
+static volatile uint8_t uart_rx_buf[UART_RX_BUF_SIZE];
+static volatile uint8_t uart_rx_head = 0;
+static volatile uint8_t uart_rx_tail = 0;
+
+ISR(USART_RX_vect)
+{
+    uint8_t c = UDR0;
+    uint8_t next_head = (uint8_t)((uart_rx_head + 1) & (UART_RX_BUF_SIZE - 1));
+    if (next_head != uart_rx_tail) {
+        uart_rx_buf[uart_rx_head] = c;
+        uart_rx_head = next_head;
+    } /* else: buffer truly full (32 unread bytes) -- drop, same as before */
+}
+
 static inline void uart_init(void)
 {
     UBRR0H = (uint8_t)(UBRR_VALUE >> 8);
     UBRR0L = (uint8_t)UBRR_VALUE;
-    UCSR0B = (1 << TXEN0) | (1 << RXEN0);
+    UCSR0B = (1 << TXEN0) | (1 << RXEN0) | (1 << RXCIE0);
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00); /* 8N1 */
+    sei();
 }
 
 static inline void uart_putc(char c)
@@ -55,13 +80,15 @@ static inline void uart_puts(const char *s)
 
 static inline bool uart_available(void)
 {
-    return (UCSR0A & (1 << RXC0)) != 0;
+    return uart_rx_head != uart_rx_tail;
 }
 
 static inline char uart_getc(void)
 {
     while (!uart_available()) {}
-    return (char)UDR0;
+    char c = (char)uart_rx_buf[uart_rx_tail];
+    uart_rx_tail = (uint8_t)((uart_rx_tail + 1) & (UART_RX_BUF_SIZE - 1));
+    return c;
 }
 
 /* The auto-reset (DTR toggle) that brings up a freshly-flashed chunk
@@ -71,7 +98,7 @@ static inline char uart_getc(void)
 static inline void uart_flush_boot_noise(void)
 {
     for (uint16_t i = 0; i < 300; i++) {
-        while (uart_available()) { (void)UDR0; }
+        while (uart_available()) { (void)uart_getc(); }
         _delay_ms(1);
     }
 }
