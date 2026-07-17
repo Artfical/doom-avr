@@ -78,6 +78,19 @@ def cmd_menu(args) -> int:
 
 
 def cmd_run(args) -> int:
+    # client.py always assumes the board is sitting on MENU.BIN when it
+    # starts (ArduinoLink.mode defaults to "MENU"). If the board was left
+    # on some other chunk from a previous session (e.g. New Game was
+    # picked, then the GUI was closed without quitting back to the menu),
+    # that assumption goes stale: the client sends menu-navigation bytes
+    # to a chunk that interprets them completely differently, which looks
+    # exactly like "keys stopped working" (Enter in particular, since it's
+    # the byte level1.c's input loop doesn't handle at all and silently
+    # ignores). Reflash MENU.BIN first every time so client and board are
+    # always in sync at startup, no separate 'menu' step required.
+    menu_rc = cmd_menu(args)
+    if menu_rc != 0:
+        return menu_rc
     result = subprocess.run([sys.executable, str(ROOT / "host" / "client.py"), args.port])
     return result.returncode
 
