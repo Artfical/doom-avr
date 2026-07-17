@@ -24,7 +24,7 @@ echo "Repository root: $REPO_ROOT"
 
 # 1. AVR toolchain
 echo
-echo "[1/3] AVR toolchain (gcc-avr, avr-libc, avrdude)"
+echo "[1/4] AVR toolchain (gcc-avr, avr-libc, avrdude)"
 if command -v avr-gcc >/dev/null 2>&1 && command -v avrdude >/dev/null 2>&1; then
     echo "avr-gcc and avrdude already on PATH: $(command -v avr-gcc), $(command -v avrdude)"
 elif command -v apt >/dev/null 2>&1; then
@@ -36,13 +36,23 @@ else
     echo "avrdude with your distro's package manager, then re-run this script."
 fi
 
-# 2. Python packages
+# 2. Python interpreter
 echo
-echo "[2/3] Python packages (pyserial, pygame)"
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "error: python3 was not found on PATH. Install Python 3.12+ and re-run this script." >&2
+echo "[2/4] Python interpreter"
+if command -v python3 >/dev/null 2>&1; then
+    echo "python3 already on PATH: $(command -v python3)"
+elif command -v apt >/dev/null 2>&1; then
+    echo "python3 not found. Installing python3, python3-pip, and python3-venv via apt (needs sudo)..."
+    sudo apt update
+    sudo apt install -y python3 python3-pip python3-venv
+else
+    echo "error: python3 was not found and apt is not available. Install Python 3.12+ with your distro's package manager and re-run this script." >&2
     exit 1
 fi
+
+# 3. Python packages
+echo
+echo "[3/4] Python packages (pyserial, pygame)"
 if ! python3 -m pip install --user -r "$REPO_ROOT/requirements.txt"; then
     echo
     echo "pip install failed (some distros block system-wide installs, PEP 668)."
@@ -51,9 +61,9 @@ if ! python3 -m pip install --user -r "$REPO_ROOT/requirements.txt"; then
     exit 1
 fi
 
-# 3. DOOM shareware WAD
+# 4. DOOM shareware WAD
 echo
-echo "[3/3] DOOM shareware WAD"
+echo "[4/4] DOOM shareware WAD"
 WAD_PATH="$REPO_ROOT/wad/doom1.wad"
 if [ -f "$WAD_PATH" ]; then
     echo "wad/doom1.wad already present, skipping download."

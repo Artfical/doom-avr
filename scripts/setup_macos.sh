@@ -24,7 +24,7 @@ echo "Repository root: $REPO_ROOT"
 
 # 1. AVR toolchain
 echo
-echo "[1/3] AVR toolchain (avr-gcc, avrdude)"
+echo "[1/4] AVR toolchain (avr-gcc, avrdude)"
 if command -v avr-gcc >/dev/null 2>&1 && command -v avrdude >/dev/null 2>&1; then
     echo "avr-gcc and avrdude already on PATH: $(command -v avr-gcc), $(command -v avrdude)"
 elif command -v brew >/dev/null 2>&1; then
@@ -35,18 +35,27 @@ else
     echo "avr-gcc and avrdude some other way, then re-run this script."
 fi
 
-# 2. Python packages
+# 2. Python interpreter
 echo
-echo "[2/3] Python packages (pyserial, pygame)"
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "error: python3 was not found on PATH. Install Python 3.12+ and re-run this script." >&2
+echo "[2/4] Python interpreter"
+if command -v python3 >/dev/null 2>&1; then
+    echo "python3 already on PATH: $(command -v python3)"
+elif command -v brew >/dev/null 2>&1; then
+    echo "python3 not found. Installing python via Homebrew..."
+    brew install python
+else
+    echo "error: python3 was not found and Homebrew is not available. Install it from https://brew.sh, or install Python 3.12+ some other way, and re-run this script." >&2
     exit 1
 fi
+
+# 3. Python packages
+echo
+echo "[3/4] Python packages (pyserial, pygame)"
 python3 -m pip install --user -r "$REPO_ROOT/requirements.txt"
 
-# 3. DOOM shareware WAD
+# 4. DOOM shareware WAD
 echo
-echo "[3/3] DOOM shareware WAD"
+echo "[4/4] DOOM shareware WAD"
 WAD_PATH="$REPO_ROOT/wad/doom1.wad"
 if [ -f "$WAD_PATH" ]; then
     echo "wad/doom1.wad already present, skipping download."

@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # See LICENSE for the full license text.
 #
-# Windows setup script. Installs the AVR toolchain (avr-gcc + avrdude),
-# installs the Python dependencies, and downloads the DOOM shareware WAD.
+# Windows setup script. Installs Python (if missing), the AVR toolchain
+# (avr-gcc + avrdude), the Python dependencies, and downloads the DOOM
+# shareware WAD.
 #
 # Usage (from the repository root):
 #   powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1
@@ -17,7 +18,7 @@ Write-Host "Repository root: $RepoRoot"
 
 # 1. AVR toolchain
 Write-Host ""
-Write-Host "[1/3] AVR toolchain (avr-gcc, avrdude)"
+Write-Host "[1/4] AVR toolchain (avr-gcc, avrdude)"
 
 $avrGcc = Get-Command avr-gcc -ErrorAction SilentlyContinue
 if ($avrGcc) {
@@ -35,20 +36,46 @@ if ($avrGcc) {
     }
 }
 
-# 2. Python packages
+# 2. Python interpreter
 Write-Host ""
-Write-Host "[2/3] Python packages (pyserial, pygame)"
+Write-Host "[2/4] Python interpreter"
 
-$python = Get-Command python -ErrorAction SilentlyContinue
-if (-not $python) {
-    throw "python was not found on PATH. Install Python 3.12+ from https://www.python.org/downloads/ and re-run this script."
+$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+$pythonExe = $null
+if ($pythonCmd) {
+    $pythonExe = $pythonCmd.Source
+    Write-Host "python already on PATH: $pythonExe"
+} else {
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if (-not $winget) {
+        throw "python was not found on PATH and winget is not available. Install Python 3.12+ from https://www.python.org/downloads/ and re-run this script."
+    }
+    Write-Host "python not found. Installing Python via winget..."
+    winget install --id Python.Python.3.12 --source winget --accept-package-agreements --accept-source-agreements
+
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCmd) {
+        $pythonExe = $pythonCmd.Source
+    } else {
+        $candidates = Get-ChildItem "$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe" -ErrorAction SilentlyContinue
+        if ($candidates) {
+            $pythonExe = $candidates[0].FullName
+            Write-Host "Found python at $pythonExe (not yet on PATH in this session)."
+        } else {
+            throw "Python was installed but could not be located automatically. Open a new terminal and re-run this script."
+        }
+    }
 }
 
-python -m pip install -r (Join-Path $RepoRoot "requirements.txt")
-
-# 3. DOOM shareware WAD
+# 3. Python packages
 Write-Host ""
-Write-Host "[3/3] DOOM shareware WAD"
+Write-Host "[3/4] Python packages (pyserial, pygame)"
+
+& $pythonExe -m pip install -r (Join-Path $RepoRoot "requirements.txt")
+
+# 4. DOOM shareware WAD
+Write-Host ""
+Write-Host "[4/4] DOOM shareware WAD"
 
 $wadPath = Join-Path $RepoRoot "wad\doom1.wad"
 if (Test-Path $wadPath) {
