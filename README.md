@@ -89,9 +89,9 @@ In-game (New Game): WASD/arrows to move and turn, Space or left-click to fire, `
 
 ## Demo video
 
-https://github.com/Artfical/doom-avr/raw/master/docs/videos/showdown.mp4
+[![Watch the demo video](docs/screenshots/game.png)](docs/videos/showdown.mp4)
 
-Real board, real serial connection, no mockups.
+Click the image to watch (opens GitHub's own video player). Real board, real serial connection, no mockups.
 
 ## Screenshots
 
