@@ -30,7 +30,11 @@ sys.path.insert(0, str(ROOT / "host"))
 
 
 def cmd_build(_args) -> int:
-    result = subprocess.run(["bash", str(ROOT / "avr" / "build.sh")], cwd=str(ROOT / "avr"))
+    # Forward slashes: git-bash's own argv parsing treats a bare "\" as an
+    # escape character and silently eats backslash-separated Windows paths
+    # (e.g. "C:\Users\..." becomes "C:Users...").
+    script = (ROOT / "avr" / "build.sh").as_posix()
+    result = subprocess.run(["bash", script], cwd=str(ROOT / "avr"))
     return result.returncode
 
 
